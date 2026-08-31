@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   Info
 } from 'lucide-react';
-import { TRAIN_DETAILS } from '../data/tripDetails';
+import { TRAIN_DETAILS, ORGANIZER_INFO } from '../data/tripDetails';
 
 export default function TrainSection({ onOpenRegister }) {
   const { outbound, inbound, reservationNotice } = TRAIN_DETAILS;
