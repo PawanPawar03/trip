@@ -74,3 +74,27 @@
 .animate-soft-pulse {
   animation: soft-pulse 2.5s infinite;
 }
+
+/* Professional Print Stylesheet for Formal Booking Receipt */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #printable-formal-receipt, #printable-formal-receipt * {
+    visibility: visible !important;
+  }
+  #printable-formal-receipt {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    border: none !important;
+    display: block !important;
+  }
+}
+
