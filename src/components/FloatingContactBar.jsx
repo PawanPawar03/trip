@@ -35,7 +35,7 @@ export default function FloatingContactBar({ onOpenRegister, onOpenInquiry }) {
           className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/30"
         >
           <Ticket className="w-4 h-4" />
-          <span>₹{ORGANIZER_INFO.registrationFee} Register</span>
+          <span>Register Seat</span>
         </button>
       </div>
 

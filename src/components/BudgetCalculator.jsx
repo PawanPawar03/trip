@@ -248,15 +248,15 @@ export default function BudgetCalculator({ onOpenRegister }) {
 
             {/* Note */}
             <p className="text-[11px] text-slate-400 italic leading-snug">
-              *Excludes personal shopping (Banarasi Silk Sarees, souvenirs). Register with ₹{ORGANIZER_INFO.registrationFee} token to lock your seat and group discounts.
+              *Excludes personal shopping (Banarasi Silk Sarees, souvenirs). Register online to lock your priority seat and group arrangements.
             </p>
 
-            {/* Register CTA with token */}
+            {/* Register CTA */}
             <button
               onClick={onOpenRegister}
               className="w-full py-4 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
             >
-              <span>Confirm Seat with ₹{ORGANIZER_INFO.registrationFee} Token</span>
+              <span>Confirm Seat Registration (Free)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

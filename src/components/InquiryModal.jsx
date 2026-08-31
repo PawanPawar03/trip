@@ -188,7 +188,7 @@ export default function InquiryModal({ isOpen, onClose, onSwitchToRegister }) {
                 }}
                 className="text-amber-400 hover:underline font-bold"
               >
-                Register Seat (₹{ORGANIZER_INFO.registrationFee} Token) →
+                Register Seat (Instant Free) →
               </button>
             </p>
           </div>

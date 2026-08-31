@@ -1,11 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Ticket, 
-  CreditCard, 
   CheckCircle2, 
-  Copy, 
-  Check, 
   Sparkles, 
   Train, 
   Phone, 
@@ -19,23 +16,18 @@ import {
   Clock, 
   Building2, 
   MapPin, 
-  Radio, 
   CheckCircle,
-  FileText
+  FileText,
+  UserCheck
 } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
 import confetti from 'canvas-confetti';
 import { ORGANIZER_INFO } from '../data/tripDetails';
 
 export default function RegistrationModal({ isOpen, onClose }) {
-  const [step, setStep] = useState(1); // 1: Form, 2: Auto Payment Listener, 3: Success & Pass
-  const [copied, setCopied] = useState(false);
-  const [selectedApp, setSelectedApp] = useState('PhonePe');
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [bookingId, setBookingId] = useState('');
-  const [paymentTimestamp, setPaymentTimestamp] = useState('');
-  const [autoDetectProgress, setAutoDetectProgress] = useState(15);
-  const [detectionStatus, setDetectionStatus] = useState('Awaiting ₹1 payment on UPI network...');
-  const [isPaymentDetected, setIsPaymentDetected] = useState(false);
+  const [registrationTimestamp, setRegistrationTimestamp] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -49,9 +41,7 @@ export default function RegistrationModal({ isOpen, onClose }) {
     notes: ''
   });
 
-  const timerRef = useRef(null);
-
-  // Generate Booking ID and timestamp when opened
+  // Generate Booking ID and timestamp
   useEffect(() => {
     if (isOpen && !bookingId) {
       const randomId = 'PVY-' + Math.floor(100000 + Math.random() * 900000);
@@ -59,165 +49,113 @@ export default function RegistrationModal({ isOpen, onClose }) {
     }
   }, [isOpen, bookingId]);
 
-  // Automatic Payment Detection Listener in Step 2
-  useEffect(() => {
-    if (step === 2) {
-      setAutoDetectProgress(20);
-      setDetectionStatus(`Connecting to UPI network for ${ORGANIZER_INFO.upiId}...`);
-
-      const p1 = setTimeout(() => {
-        setAutoDetectProgress(55);
-        setDetectionStatus(`Detecting incoming ₹${ORGANIZER_INFO.registrationFee} payment...`);
-      }, 1800);
-
-      const p2 = setTimeout(() => {
-        setAutoDetectProgress(90);
-        setDetectionStatus(`Incoming transaction detected! Verifying with ${selectedApp}...`);
-      }, 3600);
-
-      const p3 = setTimeout(() => {
-        setAutoDetectProgress(100);
-        setIsPaymentDetected(true);
-        setDetectionStatus(`✅ Payment Verified & Received (₹${ORGANIZER_INFO.registrationFee}.00 INR)!`);
-
-        const now = new Date();
-        const formattedDate = now.toLocaleDateString('en-IN', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric'
-        });
-        const formattedTime = now.toLocaleTimeString('en-IN', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: true
-        });
-        const fullTimestamp = `${formattedDate}, ${formattedTime} IST`;
-        setPaymentTimestamp(fullTimestamp);
-
-        // Auto trigger celebration & advance to Step 3
-        setTimeout(() => {
-          triggerSuccessTransition(fullTimestamp);
-        }, 1200);
-      }, 5200);
-
-      return () => {
-        clearTimeout(p1);
-        clearTimeout(p2);
-        clearTimeout(p3);
-      };
-    }
-  }, [step, selectedApp]);
-
   if (!isOpen) return null;
 
-  const upiPayLink = `upi://pay?pa=${ORGANIZER_INFO.upiId}&pn=${encodeURIComponent(ORGANIZER_INFO.upiPayeeName)}&am=${ORGANIZER_INFO.registrationFee}&cu=INR&tn=${encodeURIComponent(`Varanasi Trip Reg ${bookingId}`)}`;
-
-  const handleCopyUpi = () => {
-    navigator.clipboard.writeText(ORGANIZER_INFO.upiId);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleFormNext = (e) => {
+  const handleRegisterSubmit = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.phone || !formData.email) return;
-    setStep(2);
-  };
 
-  const handleAppClick = (appName) => {
-    setSelectedApp(appName);
-    setDetectionStatus(`Opening ${appName}... Verifying transaction automatically...`);
-    setAutoDetectProgress(75);
-  };
+    setIsSubmitting(true);
 
-  const triggerSuccessTransition = (timestampStr) => {
-    setStep(3);
-
-    // Confetti explosion
-    try {
-      confetti({
-        particleCount: 150,
-        spread: 90,
-        origin: { y: 0.55 }
-      });
-    } catch (err) {
-      console.log(err);
-    }
-
-    // Auto-dispatch receipt to WhatsApp
-    const receiptMessage = 
-      `*🛕 OFFICIAL TRIP REGISTRATION RECEIPT*\n` +
-      `*Receipt / Voucher No:* ${bookingId}\n` +
-      `*Payment Timestamp:* ${timestampStr}\n` +
-      `*Trip:* Pune ➔ Varanasi (28 Nov - 05 Dec 2026)\n\n` +
-      `*--- ORGANIZER / HOST ---*\n` +
-      `*Organizer:* ${ORGANIZER_INFO.name}\n` +
-      `*Contact:* +91 ${ORGANIZER_INFO.phone}\n` +
-      `*UPI ID:* ${ORGANIZER_INFO.upiId}\n\n` +
-      `*--- TRAVELER / CUSTOMER ---*\n` +
-      `*Name:* ${formData.name}\n` +
-      `*Mobile:* ${formData.phone}\n` +
-      `*Email:* ${formData.email}\n` +
-      `*Travelers:* ${formData.travelers}\n` +
-      `*Train Class:* ${formData.trainComfort}\n` +
-      `*Hotel Choice:* ${formData.hotelPreference}\n\n` +
-      `*--- PAYMENT BREAKDOWN ---*\n` +
-      `*Registration Token:* ₹${ORGANIZER_INFO.registrationFee}.00 INR\n` +
-      `*Payment Status:* ✅ PAID & VERIFIED (UPI: ${ORGANIZER_INFO.upiId})\n` +
-      `*Balance Fee:* Payable as per IRCTC tickets & hotel\n\n` +
-      `_Har Har Mahadev! Seat confirmed with priority allocation._`;
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+    const formattedTime = now.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+    const fullTimestamp = `${formattedDate}, ${formattedTime} IST`;
+    setRegistrationTimestamp(fullTimestamp);
 
     setTimeout(() => {
-      window.open(`https://wa.me/${ORGANIZER_INFO.whatsappNumber}?text=${encodeURIComponent(receiptMessage)}`, '_blank');
-    }, 800);
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+
+      // Trigger Confetti
+      try {
+        confetti({
+          particleCount: 150,
+          spread: 90,
+          origin: { y: 0.55 }
+        });
+      } catch (err) {
+        console.log(err);
+      }
+
+      // Auto-dispatch WhatsApp Confirmation to Pawan Pawar
+      const whatsappReceiptMessage = 
+        `*🛕 OFFICIAL TRIP REGISTRATION VOUCHER*\n` +
+        `*Voucher / Ref No:* ${bookingId}\n` +
+        `*Registration Timestamp:* ${fullTimestamp}\n` +
+        `*Tour:* Pune ➔ Varanasi Yatra (28 Nov - 05 Dec 2026)\n\n` +
+        `*--- TRAVELER (CUSTOMER) DETAILS ---*\n` +
+        `*Full Name:* ${formData.name}\n` +
+        `*Mobile Number:* ${formData.phone}\n` +
+        `*Email Address:* ${formData.email}\n` +
+        `*Total Members:* ${formData.travelers}\n` +
+        `*Train Class Preference:* ${formData.trainComfort}\n` +
+        `*Hotel Preference:* ${formData.hotelPreference}\n\n` +
+        `*--- ORGANIZER / HOST DETAILS ---*\n` +
+        `*Lead Host:* ${ORGANIZER_INFO.name}\n` +
+        `*Phone:* +91 ${ORGANIZER_INFO.phone}\n` +
+        `*Email:* ${ORGANIZER_INFO.email}\n\n` +
+        `*Status:* ✅ SEAT REGISTRATION CONFIRMED\n` +
+        `_Har Har Mahadev! Sent automatically via Pune-Varanasi Tour Portal._`;
+
+      setTimeout(() => {
+        window.open(`https://wa.me/${ORGANIZER_INFO.whatsappNumber}?text=${encodeURIComponent(whatsappReceiptMessage)}`, '_blank');
+      }, 700);
+    }, 600);
   };
 
-  const handleManualWhatsAppReceipt = () => {
-    const receiptMessage = 
-      `*🛕 OFFICIAL TRIP REGISTRATION RECEIPT (${bookingId})*\n\n` +
-      `*Date & Time:* ${paymentTimestamp || new Date().toLocaleString('en-IN')}\n` +
-      `*Traveler:* ${formData.name} (${formData.phone})\n` +
+  const handleManualWhatsAppSend = () => {
+    const whatsappReceiptMessage = 
+      `*🛕 OFFICIAL TRIP REGISTRATION VOUCHER (${bookingId})*\n\n` +
+      `*Timestamp:* ${registrationTimestamp || new Date().toLocaleString('en-IN')}\n` +
+      `*Traveler Name:* ${formData.name}\n` +
+      `*Mobile:* ${formData.phone}\n` +
       `*Email:* ${formData.email}\n` +
-      `*Members:* ${formData.travelers}\n` +
-      `*Train:* ${formData.trainComfort}\n` +
+      `*Group Size:* ${formData.travelers}\n` +
+      `*Train Class:* ${formData.trainComfort}\n` +
       `*Hotel:* ${formData.hotelPreference}\n` +
-      `*Token Paid:* ₹${ORGANIZER_INFO.registrationFee}.00 INR (PAID)\n\n` +
-      `*Organizer:* ${ORGANIZER_INFO.name} (+91 ${ORGANIZER_INFO.phone})\n` +
-      `*UPI ID:* ${ORGANIZER_INFO.upiId}`;
+      `*Status:* CONFIRMED\n\n` +
+      `*Host:* ${ORGANIZER_INFO.name} (+91 ${ORGANIZER_INFO.phone})\n` +
+      `*Host Email:* ${ORGANIZER_INFO.email}`;
 
-    window.open(`https://wa.me/${ORGANIZER_INFO.whatsappNumber}?text=${encodeURIComponent(receiptMessage)}`, '_blank');
+    window.open(`https://wa.me/${ORGANIZER_INFO.whatsappNumber}?text=${encodeURIComponent(whatsappReceiptMessage)}`, '_blank');
   };
 
-  const handleEmailReceipt = () => {
-    const subject = encodeURIComponent(`Booking Confirmation: Pune to Varanasi Yatra 2026 (${bookingId})`);
+  const handleEmailSend = () => {
+    const subject = encodeURIComponent(`Official Booking Voucher: Pune to Varanasi Yatra 2026 (${bookingId})`);
     const body = encodeURIComponent(
-      `Dear ${formData.name},\n\n` +
-      `Namaste! Your registration for the Pune to Varanasi Yatra (28 Nov – 05 Dec 2026) is CONFIRMED.\n\n` +
-      `OFFICIAL RECEIPT DETAILS:\n` +
-      `-----------------------------------------\n` +
-      `Receipt / Voucher No: ${bookingId}\n` +
-      `Payment Timestamp: ${paymentTimestamp || new Date().toLocaleString('en-IN')}\n` +
-      `Traveler Name: ${formData.name}\n` +
-      `Contact Phone: ${formData.phone}\n` +
-      `Email Address: ${formData.email}\n` +
-      `Number of Travelers: ${formData.travelers}\n` +
-      `Train Comfort Class: ${formData.trainComfort}\n` +
-      `Hotel Preference: ${formData.hotelPreference}\n` +
-      `Token Amount Paid: ₹${ORGANIZER_INFO.registrationFee}.00 INR\n` +
-      `Payment Mode: Direct UPI (Paid to ${ORGANIZER_INFO.upiId})\n` +
-      `Status: CONFIRMED & VERIFIED\n\n` +
-      `ORGANIZER DETAILS:\n` +
-      `Lead Host: ${ORGANIZER_INFO.name}\n` +
-      `Phone: +91 ${ORGANIZER_INFO.phone}\n` +
-      `UPI ID: ${ORGANIZER_INFO.upiId}\n\n` +
-      `TRAIN SCHEDULE:\n` +
-      `• Onward: Train 22131 (Pune - Banaras Exp) • 28 Nov 2026, 4:15 PM\n` +
-      `• Return: Train 11034 (Banaras - Pune Exp) • 05 Dec 2026, 3:30 AM\n\n` +
+      `PUNE TO VARANASI (KASHI) DIVINE YATRA 2026\n` +
+      `OFFICIAL SEAT REGISTRATION VOUCHER\n` +
+      `--------------------------------------------------\n\n` +
+      `BOOKING & TRAVELER DETAILS:\n` +
+      `• Voucher Number: ${bookingId}\n` +
+      `• Registration Date & Time: ${registrationTimestamp || new Date().toLocaleString('en-IN')}\n` +
+      `• Primary Traveler: ${formData.name}\n` +
+      `• Mobile Number: ${formData.phone}\n` +
+      `• Email Address: ${formData.email}\n` +
+      `• Group Size: ${formData.travelers}\n` +
+      `• Train Comfort Preference: ${formData.trainComfort}\n` +
+      `• Hotel Category: ${formData.hotelPreference}\n` +
+      `• Status: CONFIRMED & SEAT HELD\n\n` +
+      `TOUR ORGANIZER / HOST DETAILS:\n` +
+      `• Lead Coordinator: ${ORGANIZER_INFO.name}\n` +
+      `• Contact Phone / WhatsApp: +91 ${ORGANIZER_INFO.phone}\n` +
+      `• Official Email: ${ORGANIZER_INFO.email}\n` +
+      `• Departure: Pune Junction (28 Nov 2026, 4:15 PM • Train 22131)\n` +
+      `• Return: Banaras Station (05 Dec 2026, 3:30 AM • Train 11034)\n\n` +
       `Har Har Mahadev!`
     );
 
-    window.location.href = `mailto:${formData.email}?cc=${ORGANIZER_INFO.phone}@example.com&subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${ORGANIZER_INFO.email}?cc=${formData.email}&subject=${subject}&body=${body}`;
   };
 
   return (
@@ -230,10 +168,10 @@ export default function RegistrationModal({ isOpen, onClose }) {
             <Ticket className="w-5 h-5 shrink-0" />
             <div>
               <h3 className="font-serif font-black text-base sm:text-lg leading-tight">
-                Pune ➔ Varanasi Yatra Registration
+                Pune ➔ Varanasi Yatra Seat Registration
               </h3>
               <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider opacity-90">
-                28 Nov – 05 Dec 2026 • Trial Token ₹{ORGANIZER_INFO.registrationFee}
+                28 Nov – 05 Dec 2026 • Instant Free Confirmation
               </p>
             </div>
           </div>
@@ -246,34 +184,19 @@ export default function RegistrationModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Step Indicator */}
-        <div className="bg-slate-950 px-4 sm:px-6 py-2.5 flex items-center justify-between border-b border-slate-800 text-[11px] sm:text-xs font-bold shrink-0">
-          <span className={`flex items-center gap-1 sm:gap-1.5 ${step >= 1 ? 'text-amber-400' : 'text-slate-500'}`}>
-            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-slate-800 border border-current flex items-center justify-center text-[10px]">1</span>
-            <span>Traveler Info</span>
-          </span>
-          <span className="text-slate-600">➔</span>
-          <span className={`flex items-center gap-1 sm:gap-1.5 ${step >= 2 ? 'text-amber-400' : 'text-slate-500'}`}>
-            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-slate-800 border border-current flex items-center justify-center text-[10px]">2</span>
-            <span>Pay ₹{ORGANIZER_INFO.registrationFee} UPI</span>
-          </span>
-          <span className="text-slate-600">➔</span>
-          <span className={`flex items-center gap-1 sm:gap-1.5 ${step >= 3 ? 'text-emerald-400' : 'text-slate-500'}`}>
-            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-slate-800 border border-current flex items-center justify-center text-[10px]">3</span>
-            <span>Payment Done & Pass</span>
-          </span>
-        </div>
-
         {/* Modal Content Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
-          {/* STEP 1: FORM */}
-          {step === 1 && (
-            <form onSubmit={handleFormNext} className="space-y-4">
-              <div className="p-3 bg-amber-950/30 rounded-xl border border-amber-500/30 text-xs text-amber-300 flex items-start gap-2">
+          {!isSubmitted ? (
+            /* REGISTRATION FORM (DIRECT - NO PAYMENT NEEDED) */
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <div className="p-3.5 bg-gradient-to-r from-amber-950/40 to-slate-950 rounded-2xl border border-amber-500/30 text-xs text-amber-300 flex items-start gap-2.5">
                 <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <span>
-                  Please provide your details below. In step 2, you can pay a trial token of <strong>₹{ORGANIZER_INFO.registrationFee}</strong> to UPI: <code>{ORGANIZER_INFO.upiId}</code>, which will automatically verify and issue your official pass.
-                </span>
+                <div className="space-y-0.5">
+                  <p className="font-bold text-white">Direct Seat Registration (100% Free)</p>
+                  <p className="text-slate-300 text-[11px]">
+                    Fill in your travel details below to confirm your seat immediately. An official voucher will be generated and dispatched automatically to <strong>{ORGANIZER_INFO.email}</strong> and your WhatsApp/Email.
+                  </p>
+                </div>
               </div>
 
               {/* Full Name */}
@@ -387,162 +310,27 @@ export default function RegistrationModal({ isOpen, onClose }) {
                 </div>
               </div>
 
-              {/* Submit & Go To Payment */}
+              {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-3.5 sm:py-4 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 transition-all"
+                disabled={isSubmitting}
+                className="w-full py-4 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] disabled:opacity-50"
               >
-                <span>Proceed to Pay ₹{ORGANIZER_INFO.registrationFee} Token</span>
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Registering Seat & Generating Voucher...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span>Confirm Seat Registration (Instant)</span>
+                  </>
+                )}
               </button>
             </form>
-          )}
-
-          {/* STEP 2: AUTO UPI PAYMENT DETECTOR */}
-          {step === 2 && (
-            <div className="space-y-5">
-              {/* Token Fee Header */}
-              <div className="text-center space-y-1 p-3.5 bg-slate-950 rounded-2xl border border-slate-800">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Registration Token</span>
-                <div className="flex items-center justify-center gap-1.5">
-                  <span className="text-3xl sm:text-4xl font-black text-gradient-gold">₹{ORGANIZER_INFO.registrationFee}</span>
-                  <span className="text-xs text-slate-400">INR (Trial Fee)</span>
-                </div>
-                <p className="text-[11px] text-amber-300 font-semibold">
-                  Tap your app to pay ₹1. Once paid, the system automatically verifies and confirms your seat.
-                </p>
-              </div>
-
-              {/* 1-Tap App Payment Buttons */}
-              <div className="space-y-2">
-                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block text-center">
-                  1. Tap App to Pay ₹{ORGANIZER_INFO.registrationFee}
-                </span>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  {/* PhonePe */}
-                  <a
-                    href={`phonepe://pay?pa=${ORGANIZER_INFO.upiId}&pn=${encodeURIComponent(ORGANIZER_INFO.upiPayeeName)}&am=${ORGANIZER_INFO.registrationFee}&cu=INR&tn=${encodeURIComponent(`Varanasi_${bookingId}`)}`}
-                    onClick={() => handleAppClick('PhonePe')}
-                    className="py-3 px-3 rounded-xl bg-purple-950/90 hover:bg-purple-900 border-2 border-purple-500/60 text-purple-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
-                  >
-                    <span className="w-2.5 h-2.5 rounded-full bg-purple-400" />
-                    <span>Pay ₹1 on PhonePe</span>
-                  </a>
-
-                  {/* Google Pay */}
-                  <a
-                    href={`gpay://upi/pay?pa=${ORGANIZER_INFO.upiId}&pn=${encodeURIComponent(ORGANIZER_INFO.upiPayeeName)}&am=${ORGANIZER_INFO.registrationFee}&cu=INR&tn=${encodeURIComponent(`Varanasi_${bookingId}`)}`}
-                    onClick={() => handleAppClick('Google Pay')}
-                    className="py-3 px-3 rounded-xl bg-blue-950/90 hover:bg-blue-900 border-2 border-blue-500/60 text-blue-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
-                  >
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
-                    <span>Pay ₹1 on GPay</span>
-                  </a>
-
-                  {/* Paytm */}
-                  <a
-                    href={`paytmmp://pay?pa=${ORGANIZER_INFO.upiId}&pn=${encodeURIComponent(ORGANIZER_INFO.upiPayeeName)}&am=${ORGANIZER_INFO.registrationFee}&cu=INR&tn=${encodeURIComponent(`Varanasi_${bookingId}`)}`}
-                    onClick={() => handleAppClick('Paytm')}
-                    className="py-3 px-3 rounded-xl bg-cyan-950/90 hover:bg-cyan-900 border-2 border-cyan-500/60 text-cyan-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
-                  >
-                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
-                    <span>Pay ₹1 on Paytm</span>
-                  </a>
-
-                  {/* Any UPI App */}
-                  <a
-                    href={upiPayLink}
-                    onClick={() => handleAppClick('UPI App')}
-                    className="py-3 px-3 rounded-xl bg-emerald-950/90 hover:bg-emerald-900 border-2 border-emerald-500/60 text-emerald-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
-                  >
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                    <span>Any UPI App</span>
-                  </a>
-                </div>
-              </div>
-
-              {/* QR Code & Scanner */}
-              <div className="p-4 bg-slate-950 rounded-2xl border border-amber-500/30 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <div className="p-2.5 bg-white rounded-xl shadow-lg shrink-0 flex flex-col items-center">
-                  <QRCodeSVG 
-                    value={upiPayLink} 
-                    size={110} 
-                    level="H" 
-                    includeMargin={false}
-                  />
-                  <span className="text-[9px] font-bold text-slate-900 mt-1 uppercase">Scan to Pay ₹1</span>
-                </div>
-
-                <div className="space-y-2 text-center sm:text-left">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">Beneficiary UPI ID</span>
-                    <div className="flex items-center justify-center sm:justify-start gap-2 mt-0.5">
-                      <code className="text-xs font-mono font-bold text-amber-300 bg-slate-900 px-2 py-1 rounded border border-slate-800">
-                        {ORGANIZER_INFO.upiId}
-                      </code>
-                      <button
-                        onClick={handleCopyUpi}
-                        className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300"
-                        title="Copy UPI ID"
-                      >
-                        {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                    {copied && <p className="text-[10px] text-emerald-400 mt-0.5">Copied to Clipboard!</p>}
-                  </div>
-
-                  <div className="text-[11px] text-slate-300 space-y-0.5">
-                    <p><strong>Payee:</strong> {ORGANIZER_INFO.upiPayeeName}</p>
-                    <p><strong>Organizer Contact:</strong> +91 {ORGANIZER_INFO.phone}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Automatic Radar / Live Payment Scanner Status */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-2 border-emerald-500/40 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex items-center justify-center">
-                      <span className="w-3 h-3 rounded-full bg-emerald-400 animate-ping absolute" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                    </div>
-                    <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">
-                      Auto Payment Detector Active
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono text-slate-400">{autoDetectProgress}%</span>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-700 ease-out"
-                    style={{ width: `${autoDetectProgress}%` }}
-                  />
-                </div>
-
-                <p className="text-xs font-medium text-slate-200 flex items-center gap-1.5">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400 shrink-0" />
-                  <span>{detectionStatus}</span>
-                </p>
-              </div>
-
-              {/* Back button */}
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200"
-                >
-                  ← Edit Traveler Info
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: PAYMENT DONE POPUP & FORMAL PASS */}
-          {step === 3 && (
+          ) : (
+            /* REGISTRATION SUCCESSFUL & DIGITAL VOUCHER PASS */
             <div className="space-y-5 text-center">
               {/* Success Badge */}
               <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border-2 border-emerald-500/50 shadow-lg shadow-emerald-500/20">
@@ -551,25 +339,25 @@ export default function RegistrationModal({ isOpen, onClose }) {
 
               <div className="space-y-0.5">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-                  Payment Verified & Registered
+                  Seat Registration Confirmed
                 </span>
                 <h3 className="text-2xl font-black text-white font-serif">
                   Har Har Mahadev! 🙏
                 </h3>
                 <p className="text-xs text-slate-300 max-w-sm mx-auto">
-                  Your seat registration token for the Pune ➔ Varanasi Yatra has been successfully verified.
+                  Your seat registration for the Pune ➔ Varanasi Yatra (28 Nov – 05 Dec 2026) is confirmed.
                 </p>
               </div>
 
-              {/* Automated Dispatch Status */}
+              {/* Automated Dispatch Indicators */}
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 flex items-center justify-center gap-1.5">
-                  <Check className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle className="w-4 h-4 text-emerald-400" />
                   <span>WhatsApp Sent to Host</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-blue-950/60 border border-blue-500/40 text-blue-300 flex items-center justify-center gap-1.5">
                   <Mail className="w-4 h-4 text-blue-400" />
-                  <span>Email Receipt Ready</span>
+                  <span>Email Sent to Host & Self</span>
                 </div>
               </div>
 
@@ -588,7 +376,7 @@ export default function RegistrationModal({ isOpen, onClose }) {
 
                   <div className="text-right">
                     <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-black rounded-full border border-emerald-500/40 block">
-                      ₹{ORGANIZER_INFO.registrationFee}.00 PAID
+                      SEAT CONFIRMED
                     </span>
                     <span className="text-[10px] font-mono text-slate-400 mt-1 block">
                       Voucher: {bookingId}
@@ -619,15 +407,15 @@ export default function RegistrationModal({ isOpen, onClose }) {
                     <p className="font-bold text-amber-300">{formData.trainComfort}</p>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold">Payment Date & Time</span>
-                    <p className="font-bold text-slate-200 text-[11px]">{paymentTimestamp || new Date().toLocaleString('en-IN')}</p>
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold">Registration Timestamp</span>
+                    <p className="font-bold text-slate-200 text-[11px]">{registrationTimestamp}</p>
                   </div>
                 </div>
 
                 {/* Footer of Pass */}
                 <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                  <span>Host: <strong>{ORGANIZER_INFO.name}</strong> ({ORGANIZER_INFO.phone})</span>
-                  <span className="text-emerald-400 font-semibold">UPI: {ORGANIZER_INFO.upiId}</span>
+                  <span>Host: <strong>{ORGANIZER_INFO.name}</strong> (+91 {ORGANIZER_INFO.phone})</span>
+                  <span className="text-amber-300 font-semibold">{ORGANIZER_INFO.email}</span>
                 </div>
               </div>
 
@@ -635,19 +423,19 @@ export default function RegistrationModal({ isOpen, onClose }) {
               <div className="space-y-2 pt-1">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <button
-                    onClick={handleManualWhatsAppReceipt}
+                    onClick={handleManualWhatsAppSend}
                     className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all"
                   >
                     <MessageCircle className="w-4 h-4 fill-white" />
-                    <span>Open WhatsApp Receipt</span>
+                    <span>Open WhatsApp Voucher</span>
                   </button>
 
                   <button
-                    onClick={handleEmailReceipt}
+                    onClick={handleEmailSend}
                     className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all"
                   >
                     <Mail className="w-4 h-4" />
-                    <span>Send Email Receipt</span>
+                    <span>Send Email to Host & Self</span>
                   </button>
                 </div>
 
@@ -657,7 +445,7 @@ export default function RegistrationModal({ isOpen, onClose }) {
                     className="py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs rounded-xl shadow-lg flex items-center justify-center gap-1.5 transition-all"
                   >
                     <Printer className="w-4 h-4" />
-                    <span>Print Formal Receipt</span>
+                    <span>Print Official Receipt</span>
                   </button>
 
                   <button
@@ -689,7 +477,7 @@ export default function RegistrationModal({ isOpen, onClose }) {
                     PUNE ➔ VARANASI (KASHI) YATRA 2026
                   </h1>
                   <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#4b5563', margin: '2px 0 0 0' }}>
-                    OFFICIAL BOOKING VOUCHER & PAYMENT RECEIPT
+                    OFFICIAL SEAT REGISTRATION VOUCHER & CONFIRMATION RECEIPT
                   </p>
                 </div>
               </div>
@@ -697,13 +485,13 @@ export default function RegistrationModal({ isOpen, onClose }) {
 
             <div style={{ textAlign: 'right' }}>
               <div style={{ display: 'inline-block', padding: '4px 12px', background: '#dcfce7', border: '1px solid #16a34a', color: '#15803d', fontWeight: '900', fontSize: '12px', borderRadius: '20px' }}>
-                PAID & CONFIRMED
+                SEAT CONFIRMED
               </div>
               <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#1f2937', margin: '6px 0 0 0' }}>
                 Voucher No: <span style={{ fontFamily: 'monospace' }}>{bookingId}</span>
               </p>
               <p style={{ fontSize: '11px', color: '#6b7280', margin: '2px 0 0 0' }}>
-                Payment Date: {paymentTimestamp || new Date().toLocaleString('en-IN')}
+                Issued: {registrationTimestamp || new Date().toLocaleString('en-IN')}
               </p>
             </div>
           </div>
@@ -727,8 +515,8 @@ export default function RegistrationModal({ isOpen, onClose }) {
                     <td style={{ fontWeight: 'bold', color: '#111827' }}>+91 {ORGANIZER_INFO.phone}</td>
                   </tr>
                   <tr>
-                    <td style={{ color: '#4b5563' }}><strong>Beneficiary UPI:</strong></td>
-                    <td style={{ fontWeight: 'bold', color: '#111827', fontFamily: 'monospace' }}>{ORGANIZER_INFO.upiId}</td>
+                    <td style={{ color: '#4b5563' }}><strong>Host Email:</strong></td>
+                    <td style={{ fontWeight: 'bold', color: '#111827' }}>{ORGANIZER_INFO.email}</td>
                   </tr>
                   <tr>
                     <td style={{ color: '#4b5563' }}><strong>Base Hub:</strong></td>
@@ -782,43 +570,43 @@ export default function RegistrationModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          {/* Itemized Payment Table */}
+          {/* Itemized Table */}
           <div style={{ marginBottom: '20px' }}>
             <h3 style={{ fontSize: '12px', fontWeight: '900', color: '#1f2937', textTransform: 'uppercase', marginBottom: '8px' }}>
-              3. PAYMENT & BOOKING TRANSACTION DETAILS
+              3. SEAT ALLOCATION & RESERVATION STATUS
             </h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <thead>
                 <tr style={{ background: '#1e293b', color: '#ffffff' }}>
                   <th style={{ padding: '8px 12px', textAlign: 'left', border: '1px solid #1e293b' }}>#</th>
                   <th style={{ padding: '8px 12px', textAlign: 'left', border: '1px solid #1e293b' }}>Item Description</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'center', border: '1px solid #1e293b' }}>Payment Mode</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'right', border: '1px solid #1e293b' }}>Amount (INR)</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'center', border: '1px solid #1e293b' }}>Status</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'right', border: '1px solid #1e293b' }}>Registration Fee</th>
                 </tr>
               </thead>
               <tbody>
                 <tr style={{ background: '#f9fafb' }}>
                   <td style={{ padding: '8px 12px', border: '1px solid #e5e7eb' }}>1</td>
                   <td style={{ padding: '8px 12px', border: '1px solid #e5e7eb' }}>
-                    <strong>Pune ➔ Varanasi Tour Priority Seat Registration Token</strong>
+                    <strong>Pune ➔ Varanasi Tour Priority Seat Registration</strong>
                     <br />
                     <span style={{ fontSize: '11px', color: '#6b7280' }}>
-                      Locks group berth booking priority for 28 Nov 2026 (Train 22131)
+                      Locks priority group berth booking for Train 22131 (28 Nov 2026)
                     </span>
                   </td>
-                  <td style={{ padding: '8px 12px', textAlign: 'center', border: '1px solid #e5e7eb' }}>
-                    Direct UPI ({ORGANIZER_INFO.upiId})
+                  <td style={{ padding: '8px 12px', textAlign: 'center', fontWeight: 'bold', color: '#15803d', border: '1px solid #e5e7eb' }}>
+                    CONFIRMED & HELD
                   </td>
-                  <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 'bold', border: '1px solid #e5e7eb' }}>
-                    ₹{ORGANIZER_INFO.registrationFee}.00
+                  <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 'bold', color: '#16a34a', border: '1px solid #e5e7eb' }}>
+                    FREE (DIRECT)
                   </td>
                 </tr>
                 <tr style={{ background: '#fef3c7', fontWeight: 'bold' }}>
                   <td colSpan={3} style={{ padding: '10px 12px', textAlign: 'right', border: '1px solid #d1d5db' }}>
-                    TOTAL AMOUNT PAID:
+                    REGISTRATION STATUS:
                   </td>
-                  <td style={{ padding: '10px 12px', textAlign: 'right', fontSize: '14px', color: '#92400e', border: '1px solid #d1d5db' }}>
-                    ₹{ORGANIZER_INFO.registrationFee}.00 INR
+                  <td style={{ padding: '10px 12px', textAlign: 'right', fontSize: '14px', color: '#15803d', border: '1px solid #d1d5db' }}>
+                    CONFIRMED
                   </td>
                 </tr>
               </tbody>
@@ -831,21 +619,21 @@ export default function RegistrationModal({ isOpen, onClose }) {
               <p style={{ margin: '0 0 4px 0' }}><strong>Important Advisory:</strong></p>
               <ul style={{ margin: 0, paddingLeft: '16px' }}>
                 <li>Railway ticket reservations open 60 days before travel (late September 2026).</li>
-                <li>Keep this digital voucher for itinerary briefings and hotel check-in at Varanasi.</li>
-                <li>For any itinerary adjustments or train berth queries, contact lead host Pawan Pawar.</li>
+                <li>This voucher has been registered with tour coordinator <strong>{ORGANIZER_INFO.name}</strong> ({ORGANIZER_INFO.email}).</li>
+                <li>For any itinerary adjustments or group queries, contact lead host directly.</li>
               </ul>
             </div>
 
             <div style={{ textAlign: 'center', border: '2px dashed #16a34a', padding: '12px', borderRadius: '8px', background: '#f0fdf4' }}>
               <div style={{ fontSize: '18px' }}>🛕</div>
               <p style={{ fontSize: '11px', fontWeight: '900', color: '#166534', margin: '4px 0 2px 0', textTransform: 'uppercase' }}>
-                VERIFIED & SEAT RESERVED
+                SEAT ALLOCATED
               </p>
               <p style={{ fontSize: '10px', color: '#4b5563', margin: 0 }}>
-                Pawan Pawar (Tour Host)
+                {ORGANIZER_INFO.name} (Tour Host)
               </p>
               <p style={{ fontSize: '9px', color: '#6b7280', margin: '2px 0 0 0' }}>
-                +91 9561547711
+                +91 {ORGANIZER_INFO.phone}
               </p>
             </div>
           </div>

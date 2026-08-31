@@ -223,14 +223,14 @@ export default function TrainSection({ onOpenRegister }) {
               onClick={onOpenRegister}
               className="shrink-0 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center gap-1.5"
             >
-              <span>Hold Priority Slot (₹{ORGANIZER_INFO.registrationFee})</span>
+              <span>Hold Priority Slot (Register Free)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs text-slate-300">
             <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 flex items-center gap-2">
-              <span className="text-amber-400 font-bold">1.</span> Register with ₹{ORGANIZER_INFO.registrationFee} token now
+              <span className="text-amber-400 font-bold">1.</span> Register your seat online now
             </div>
             <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 flex items-center gap-2">
               <span className="text-amber-400 font-bold">2.</span> Berth booking on Day 1 of window

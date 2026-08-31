@@ -134,7 +134,7 @@ export default function InquirySection({ onOpenRegister }) {
             <div className="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-bold text-amber-300">Ready to lock your berth?</p>
-                <p className="text-[11px] text-slate-400">Token registration only ₹{ORGANIZER_INFO.registrationFee}</p>
+                <p className="text-[11px] text-slate-400">Instant direct registration (Free)</p>
               </div>
               <button
                 onClick={onOpenRegister}

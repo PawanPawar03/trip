@@ -70,14 +70,14 @@ export default function Footer({ onOpenRegister, onOpenInquiry }) {
                 <button onClick={handleWhatsApp} className="hover:underline">WhatsApp Direct</button>
               </p>
               <p className="text-slate-400">
-                UPI ID: <code className="text-amber-300 bg-slate-900 px-1.5 py-0.5 rounded">{ORGANIZER_INFO.upiId}</code>
+                Email: <span className="text-amber-300">{ORGANIZER_INFO.email}</span>
               </p>
               <div className="pt-2">
                 <button
                   onClick={onOpenRegister}
                   className="w-full py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-lg shadow transition-all"
                 >
-                  Register Seat (₹{ORGANIZER_INFO.registrationFee})
+                  Register Seat (Instant Free)
                 </button>
               </div>
             </div>

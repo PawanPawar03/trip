@@ -117,7 +117,7 @@ export default function Hero({ onOpenRegister, onOpenInquiry }) {
             className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-base sm:text-lg rounded-xl shadow-xl shadow-amber-500/30 hover:shadow-amber-500/50 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2.5 animate-soft-pulse"
           >
             <CreditCard className="w-5 h-5" />
-            <span>Register Seat (₹{ORGANIZER_INFO.registrationFee} Token)</span>
+            <span>Register Seat (Instant Free)</span>
             <ArrowRight className="w-5 h-5" />
           </button>
 
@@ -137,7 +137,7 @@ export default function Hero({ onOpenRegister, onOpenInquiry }) {
             <ShieldCheck className="w-4 h-4" /> 100% Genuine Direct Coordination
           </span>
           <span className="flex items-center gap-1.5 text-amber-300">
-            <CheckCircle2 className="w-4 h-4 text-amber-400" /> Pay via PhonePe / Google Pay / UPI ({ORGANIZER_INFO.upiId})
+            <CheckCircle2 className="w-4 h-4 text-amber-400" /> Instant Digital Pass & WhatsApp Voucher
           </span>
           <span className="flex items-center gap-1.5 text-slate-300">
             <Train className="w-4 h-4 text-blue-400" /> 60-Day Advance Train Berth Priority

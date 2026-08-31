@@ -119,7 +119,7 @@ export default function TripHighlights({ onOpenRegister, onOpenInquiry }) {
               <span>Ready for the sacred journey to Banaras?</span>
             </h4>
             <p className="text-xs sm:text-sm text-slate-300">
-              Lock your preferred train berth (SL / 3A / 2A) today with a token fee of just <strong>₹{ORGANIZER_INFO.registrationFee}</strong>.
+              Lock your preferred train berth (SL / 3A / 2A) today with instant free seat registration.
             </p>
           </div>
 
@@ -134,7 +134,7 @@ export default function TripHighlights({ onOpenRegister, onOpenInquiry }) {
               onClick={onOpenRegister}
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/30 transition-all hover:scale-105"
             >
-              Register (₹{ORGANIZER_INFO.registrationFee})
+              Register Seat (Free)
             </button>
           </div>
         </div>

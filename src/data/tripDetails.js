@@ -3,8 +3,9 @@ export const ORGANIZER_INFO = {
   phone: "9561547711",
   displayPhone: "+91 9561547711",
   whatsappNumber: "919561547711",
+  email: "pawanpawar416@gmail.com",
   upiId: "pawanpawar4167@ybl",
-  registrationFee: 1, // Trial Token Fee ₹1 INR
+  registrationFee: 0, // Free Direct Registration (No token payment needed)
   upiPayeeName: "Pawan Pawar",
   tripTitle: "Pune to Varanasi (Banaras) Divine Yatra 2026",
   dates: "28 Nov 2026 – 05 Dec 2026",

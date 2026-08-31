@@ -111,8 +111,8 @@ export const SHOPPING_GUIDE = [
 
 export const FAQS = [
   {
-    q: "Why is a ₹1 trial registration token charged?",
-    a: "The ₹1 fee is a nominal token to verify your UPI payment and hold your priority slot in the group. This helps organizer Pawan Pawar arrange group train berth bookings (60 days in advance) and reserve hotel accommodations."
+    q: "How does seat registration work?",
+    a: "Registration is 100% direct and free! Simply fill out your name, contact details, number of travelers, and train/hotel preference. An official booking voucher is immediately generated and dispatched to organizer Pawan Pawar (pawanpawar416@gmail.com) and to your WhatsApp/Email."
   },
   {
     q: "How does the train booking work?",
@@ -127,8 +127,8 @@ export const FAQS = [
     a: "Traditional modest attire is recommended. Men: Dhoti/Kurta or formal trousers; Women: Saree or Salwar-Kameez. Leather items (belts, wallets) and electronic devices are deposited in corridor lockers before inner sanctum entry."
   },
   {
-    q: "How do I pay the ₹1 registration token?",
-    a: "You can pay ₹1 instantly using PhonePe, Google Pay, Paytm, or any UPI app by scanning our dynamic QR code or sending directly to UPI ID: pawanpawar4167@ybl. Once paid, click confirm to receive your instant digital pass on WhatsApp and Email."
+    q: "How do I receive my official registration voucher?",
+    a: "As soon as you click submit, your official booking voucher is generated on the screen with a printable A4 format, and automatically sent to organizer Pawan Pawar on WhatsApp and Email (pawanpawar416@gmail.com)."
   },
   {
     q: "Can I contact Pawan Pawar directly for custom questions?",

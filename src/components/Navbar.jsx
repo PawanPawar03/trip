@@ -109,7 +109,7 @@ export default function Navbar({ onOpenRegister, onOpenInquiry }) {
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-950 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:to-orange-400 rounded-lg shadow-md shadow-amber-500/30 hover:shadow-amber-500/50 transition-all hover:scale-105"
           >
             <Ticket className="w-4 h-4" />
-            <span>Register (₹{ORGANIZER_INFO.registrationFee})</span>
+            <span>Register Seat</span>
           </button>
         </div>
 
@@ -119,7 +119,7 @@ export default function Navbar({ onOpenRegister, onOpenInquiry }) {
             onClick={onOpenRegister}
             className="px-3 py-1.5 text-xs font-bold text-slate-950 bg-amber-400 rounded-lg shadow-sm"
           >
-            ₹{ORGANIZER_INFO.registrationFee} Reg
+            Register
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -155,7 +155,7 @@ export default function Navbar({ onOpenRegister, onOpenInquiry }) {
               className="w-full py-2.5 text-center font-bold text-slate-950 bg-gradient-to-r from-amber-400 to-orange-400 rounded-lg shadow-md flex items-center justify-center gap-2"
             >
               <Ticket className="w-4 h-4" />
-              <span>Register Seat (₹{ORGANIZER_INFO.registrationFee} Token)</span>
+              <span>Register Seat (Instant)</span>
             </button>
 
             <div className="grid grid-cols-2 gap-2 pt-1">
