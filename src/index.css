@@ -85,26 +85,26 @@
   html, body {
     margin: 0 !important;
     padding: 0 !important;
-    height: auto !important;
-    min-height: auto !important;
     background: #ffffff !important;
     color: #111827 !important;
-    overflow: visible !important;
   }
 
-  /* Hide entire web page and modals */
-  body > * {
+  /* Hide background UI elements */
+  nav,
+  main,
+  footer,
+  .fixed,
+  button {
     display: none !important;
   }
 
   /* Show only the single-page printable formal receipt */
-  body > #printable-formal-receipt,
   #printable-formal-receipt {
     display: block !important;
     visibility: visible !important;
     position: static !important;
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: 750px !important;
     margin: 0 auto !important;
     padding: 0 !important;
     background: #ffffff !important;

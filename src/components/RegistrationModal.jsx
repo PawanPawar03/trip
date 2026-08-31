@@ -185,6 +185,53 @@ export default function RegistrationModal({ isOpen, onClose }) {
     window.location.href = `mailto:${ORGANIZER_INFO.email}?cc=${formData.email}&subject=${subject}&body=${body}`;
   };
 
+  const handlePrintReceipt = () => {
+    const receiptElement = document.getElementById('printable-formal-receipt');
+    if (!receiptElement) {
+      window.print();
+      return;
+    }
+
+    const printWindow = window.open('', '_blank', 'width=850,height=900');
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Pune to Varanasi Yatra Voucher - ${bookingId}</title>
+          <meta charset="utf-8">
+          <style>
+            @page { size: A4 portrait; margin: 8mm; }
+            * { box-sizing: border-box; }
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
+              margin: 0; 
+              padding: 10px; 
+              background: #ffffff; 
+              color: #111827; 
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+          </style>
+        </head>
+        <body>
+          ${receiptElement.innerHTML}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 350);
+  };
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
@@ -469,7 +516,7 @@ export default function RegistrationModal({ isOpen, onClose }) {
 
                   <div className="grid grid-cols-2 gap-2">
                     <button
-                      onClick={() => window.print()}
+                      onClick={handlePrintReceipt}
                       className="py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs rounded-xl shadow-lg flex items-center justify-center gap-1.5 transition-all"
                     >
                       <Printer className="w-4 h-4" />
